@@ -2,6 +2,7 @@ import requests
 import json
 from config import *
 from time import *
+import wxpusher
 import hashlib
 
 def today_act():
@@ -97,7 +98,9 @@ def sign_act(act_id, flag):
                 r_dic = json.loads(r.text)
                 if 'code' in r_dic:
                     if r_dic['code'] == 0:
-                        print('报名成功！')
+                        print('活动：'+ i +' 报名成功！')
+                        # 发送信息
+                        wxpusher.send('活动：'+ i +' 报名成功！')
                         return
                 str_show = strftime('%Y-%m-%d %H:%M:%S', localtime(time())) + '\t' + i + '\t报名失败！'
                 if 'message' in r_dic:

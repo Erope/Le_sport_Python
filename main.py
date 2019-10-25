@@ -1,5 +1,6 @@
 from login_info import *
 from sign import *
+from wxpusher import *
 info = {}
 selfinfo = {}
 def menu():
@@ -45,4 +46,3 @@ if __name__ == '__main__':
             act_gps_info = get_act_gps_info(int(id))
             act_sign_gps(int(id), act_gps_info)
     # 暂时不测试获取活动id，直接指定
-    # 下一步测试
