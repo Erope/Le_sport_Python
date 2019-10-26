@@ -5,6 +5,7 @@ from time import *
 import wxpusher
 import hashlib
 
+
 def today_act():
     # 只请求第一页的内容，我想应该也没人一天签到10次吧。。。
     data = {
@@ -52,6 +53,8 @@ def show_today_act(act_list):
         else:
             str_show += '\t' + '错误情况'
         print(str_show)
+
+
 def get_act_list():
     data = {
         'pageNum': 1,
@@ -125,24 +128,36 @@ def gen_sign(act,timestamp):
     return str_sign
 
 
-def act_sign_gps(act,gps_info):
-    if gps_info['data']['position'] == None:
-        print('GPS定位参数暂未开放！')
-        return
-    latitude = gps_info['data']['position']['latitude']
-    longitude = gps_info['data']['position']['longitude']
-    timestamp = time()
-    # 计算sign
-    sign = gen_sign(str(act),str(timestamp))
-    data = {
-        'activityId': act,
-        'deviceId': config_UUID,
-        'location': {
-            'latitude': latitude,
-            'longitude': longitude,
-        },
-        'sign': sign,
-        'timestamp': timestamp,
-    }
-    r = requests.post(config_url['act_sign'],data = json.dumps(data), headers = config_header_post)
-    print(r.text)
+def act_sign_gps(act,flag):
+    list = act.split(',')
+    if flag:
+        try_time = 100000
+    else:
+        try_time = 1
+    while try_time != 0:
+        for i in list:
+            gps_info = get_act_gps_info(int(i))
+            if gps_info['data']['position'] == None:
+                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' GPS定位参数暂未开放！')
+                continue
+            latitude = gps_info['data']['position']['latitude']
+            longitude = gps_info['data']['position']['longitude']
+            timestamp = int(round(time() * 1000))
+            # 计算sign
+            sign = gen_sign(str(i),str(timestamp))
+            data = {
+                'activityId': int(i),
+                'deviceId': config_UUID,
+                'location': {
+                    'latitude': latitude,
+                    'longitude': longitude,
+                },
+                'sign': sign,
+                'timestamp': timestamp,
+            }
+            r = requests.post(config_url['act_sign'],data = json.dumps(data), headers = config_header_post)
+            r_return = json.loads(r.text)
+            if r_return['code'] == 0:
+                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到成功！')
+            else:
+                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到失败！' + str(r_return['message']))

@@ -43,6 +43,5 @@ if __name__ == '__main__':
         elif choice == '6':
             print('请输入活动ID')
             id = input()
-            act_gps_info = get_act_gps_info(int(id))
-            act_sign_gps(int(id), act_gps_info)
+            act_sign_gps(id, True)
     # 暂时不测试获取活动id，直接指定
