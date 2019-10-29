@@ -1,5 +1,6 @@
 from login_info import *
 from sign import *
+from run import *
 from wxpusher import *
 info = {}
 selfinfo = {}
@@ -10,6 +11,8 @@ def menu():
     print('4. 学生签到')
     print('5. 活动GPS状态')
     print('6. 签到活动')
+    print('7. 速跑(不建议使用)')
+    print('8. 正常跑')
 
 
 if __name__ == '__main__':
@@ -44,4 +47,14 @@ if __name__ == '__main__':
             print('请输入活动ID')
             id = input()
             act_sign_gps(id, True)
+        elif choice == '7':
+            print('速跑开始')
+            r_text = start()
+            end(r_text)
+        elif choice == '8':
+            print('跑步开始')
+            print('将会延迟：{} 秒后提交跑步结果'.format(config_Rundelay))
+            r_text = start()
+            sleep(config_Rundelay)
+            end(r_text)
     # 暂时不测试获取活动id，直接指定
