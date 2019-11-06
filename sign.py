@@ -25,8 +25,15 @@ def get_act_gps_info(act):
     data = {
         'activityId': act,
     }
-    r = requests.get(config_url['act_gps_info'],params = data, headers = config_header_get)
-    return json.loads(r.text)
+    try:
+        r = requests.get(config_url['act_gps_info'],params = data, headers = config_header_get, timeout = 5)
+    except:
+        print('获取GPS数据时失败！')
+    try:
+        json_l = json.loads(r.text)
+    except:
+        json_l={'data': {'position': None}}
+    return json_l
 
 
 def show_gps_info(act):
@@ -88,23 +95,24 @@ def show_act_list_info(act_list):
 def sign_act(act_id, flag):
     list = act_id.split(',')
     if flag:
-        try_time = 100000
+        try_time = 1000000
     else:
         try_time = 1
-    while try_time!= 0:
-        for i in list:
+    while try_time!= 0 and list:
+        for i in list[:]:
             data = {
                 'activityId': int(i),
             }
             try:
-                r = requests.post(config_url['act_register'],data = json.dumps(data), headers = config_header_post)
+                r = requests.post(config_url['act_register'],data = json.dumps(data), headers = config_header_post, timeout = 5)
                 r_dic = json.loads(r.text)
                 if 'code' in r_dic:
                     if r_dic['code'] == 0:
                         print('活动：'+ i +' 报名成功！')
                         # 发送信息
                         wxpusher.send('活动：'+ i +' 报名成功！')
-                        return
+                        list.remove(i)
+                        continue
                 str_show = strftime('%Y-%m-%d %H:%M:%S', localtime(time())) + '\t' + i + '\t报名失败！'
                 if 'message' in r_dic:
                     str_show += r_dic['message']
@@ -116,7 +124,6 @@ def sign_act(act_id, flag):
 
 
 def gen_sign(act,timestamp):
-    str_sign = timestamp
     str_sign = timestamp[0:6] + act + timestamp[6:]
     hl = hashlib.md5()
     hl.update(str_sign.encode("utf-8"))
@@ -129,35 +136,42 @@ def gen_sign(act,timestamp):
 
 
 def act_sign_gps(act,flag):
-    list = act.split(',')
-    if flag:
-        try_time = 100000
-    else:
-        try_time = 1
-    while try_time != 0:
-        for i in list:
-            gps_info = get_act_gps_info(int(i))
-            if gps_info['data']['position'] == None:
-                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' GPS定位参数暂未开放！')
-                continue
-            latitude = gps_info['data']['position']['latitude']
-            longitude = gps_info['data']['position']['longitude']
-            timestamp = int(round(time() * 1000))
-            # 计算sign
-            sign = gen_sign(str(i),str(timestamp))
-            data = {
-                'activityId': int(i),
-                'deviceId': config_UUID,
-                'location': {
-                    'latitude': latitude,
-                    'longitude': longitude,
-                },
-                'sign': sign,
-                'timestamp': timestamp,
-            }
-            r = requests.post(config_url['act_sign'],data = json.dumps(data), headers = config_header_post)
-            r_return = json.loads(r.text)
-            if r_return['code'] == 0:
-                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到成功！')
-            else:
-                print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到失败！' + str(r_return['message']))
+    try:
+        list = act.split(',')
+        if flag:
+            try_time = 1000000
+        else:
+            try_time = 1
+        while try_time != 0:
+            try:
+                for i in list:
+                    gps_info = get_act_gps_info(int(i))
+                    if gps_info['data']['position'] == None:
+                        print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' GPS定位参数暂未开放！')
+                        continue
+                    latitude = gps_info['data']['position']['latitude']
+                    longitude = gps_info['data']['position']['longitude']
+                    timestamp = int(round(time() * 1000))
+                    # 计算sign
+                    sign = gen_sign(str(i),str(timestamp))
+                    data = {
+                        'activityId': int(i),
+                        'deviceId': config_UUID,
+                        'location': {
+                            'latitude': latitude,
+                            'longitude': longitude,
+                        },
+                        'sign': sign,
+                        'timestamp': timestamp,
+                    }
+                    r = requests.post(config_url['act_sign'],data = json.dumps(data), headers = config_header_post, timeout = 5)
+                    r_return = json.loads(r.text)
+                    if r_return['code'] == 0:
+                        print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到成功！')
+                    else:
+                        print(strftime('%Y-%m-%d %H:%M:%S ', localtime(time())) + i + ' 签到失败！' + str(r_return['message']))
+            except:
+                print('循环签到的时出现错误！')
+    except:
+        print('尝试签到时出现错误！尝试重启签到！')
+        act_sign_gps(act, flag)

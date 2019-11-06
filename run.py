@@ -5,6 +5,7 @@ from time import *
 import wxpusher
 import hashlib
 import random
+import amap
 
 
 def getrunningrule():
@@ -16,8 +17,8 @@ def getrunningrule():
 def start():
     data = {
         "campusId": 22,
-        "latitude": 30.76218407685636,
-        "longitude": 103.98201672761103,
+        "latitude": 30.7663030000 + (random.randint(-20000000000, 200000000000) / 10000000000000000),
+        "longitude": 103.9799940000 + (random.randint(-20000000000, 200000000000) / 10000000000000000),
         "type": 1,
     }
     r = requests.post(config_url['run_start'], headers=config_header_post, data=json.dumps(data))
@@ -39,13 +40,31 @@ def end(start_text):
     latitude = []
     longitude = []
     speed = []
-    for i in range(1,210):
-        tmp = 30.762 + (random.randint(1000000000000,5000000000000)/1000000000000000)
-        latitude.append(tmp)
-    for i in range(1,210):
-        tmp = 103.979 + (random.randint(1000000000000,3000000000000)/1000000000000000)
-        longitude.append(tmp)
-    for i in range(1,210):
+
+    road = amap.getrouad(start_text)
+    d_list = road.split(';')
+    formatList = list(set(d_list))
+    formatList.sort(key=d_list.index)
+    d_num = len(formatList) - 1
+    s_num = 0
+    for i in range(0,d_num):
+        if formatList[i] == '':
+            continue
+        f = formatList[i].split(',')
+        t_a = float(f[1])
+        t_b = float(f[0])
+        if formatList[i-1] == '':
+            continue
+        f = formatList[i-1].split(',')
+        t_c = float(f[1])
+        t_d = float(f[0])
+        for j in range(0,10):
+            t_l = ((t_a - t_c) / 10) * j + t_c + (random.randint(-20000000000, 20000000000) / 10000000000000000)
+            t_r = ((t_b - t_d) / 10) * j + t_d + (random.randint(-20000000000, 20000000000) / 10000000000000000)
+            latitude.append(t_l)
+            longitude.append(t_r)
+            s_num = s_num + 1
+    for i in range(0,s_num):
         tmp = random.randint(100,200)
         speed.append(tmp)
     timestamp = int(round(time() * 1000))
@@ -55,6 +74,7 @@ def end(start_text):
         random.randint(timestamp - 500000, timestamp)
     ]
     distance = random.randint(3100, 3300)
+    #distance = 100
     totalTime = random.randint(700, 750)
     startTime = timestamp - 700000
     endTime = timestamp
@@ -101,6 +121,7 @@ def end(start_text):
         "version": "V 2.4.4",
     }
     r = requests.post(config_url['run_end'], headers=config_header_post, data=json.dumps(data))
+    print(r.text)
     json_r = json.loads(r.text)
     if json_r['data']['valid'] == 1:
         print('跑步完成！')
