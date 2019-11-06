@@ -21,8 +21,8 @@ def getrouad(start_text):
     start_s = json.loads(start_text)
     requireLatitude = start_s['data']['randomCircuit']['requireLatitude']
     requireLongitude = start_s['data']['randomCircuit']['requireLongitude']
-    requireLatitude.append(30.7663030000 + (random.randint(-20000000000, 200000000000) / 10000000000000000))
-    requireLongitude.append(103.9799940000 + (random.randint(-20000000000, 200000000000) / 10000000000000000))
+    requireLatitude.append(config_start_latitude + (random.randint(-20000000000, 200000000000) / 10000000000000000))
+    requireLongitude.append(config_start_longitude + (random.randint(-20000000000, 200000000000) / 10000000000000000))
 
     road = ""
     for i in range(0,4):

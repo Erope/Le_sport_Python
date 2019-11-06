@@ -17,8 +17,8 @@ def getrunningrule():
 def start():
     data = {
         "campusId": 22,
-        "latitude": 30.7663030000 + (random.randint(-20000000000, 200000000000) / 10000000000000000),
-        "longitude": 103.9799940000 + (random.randint(-20000000000, 200000000000) / 10000000000000000),
+        "latitude": config_start_latitude + (random.randint(-20000000000, 200000000000) / 10000000000000000),
+        "longitude": config_start_longitude + (random.randint(-20000000000, 200000000000) / 10000000000000000),
         "type": 1,
     }
     r = requests.post(config_url['run_start'], headers=config_header_post, data=json.dumps(data))
@@ -121,7 +121,6 @@ def end(start_text):
         "version": "V 2.4.4",
     }
     r = requests.post(config_url['run_end'], headers=config_header_post, data=json.dumps(data))
-    print(r.text)
     json_r = json.loads(r.text)
     if json_r['data']['valid'] == 1:
         print('跑步完成！')
