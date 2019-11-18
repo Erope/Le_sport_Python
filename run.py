@@ -25,7 +25,7 @@ def start():
     return r.text
 
 
-def end(start_text):
+def end(start_text, yesterday=False):
     start_s = json.loads(start_text)
     circuitString = {
         "randomCircuit": {
@@ -68,13 +68,14 @@ def end(start_text):
         tmp = random.randint(100,200)
         speed.append(tmp)
     timestamp = int(round(time() * 1000))
+    if yesterday:
+        timestamp -= 86400000
     passTime = [
         random.randint(timestamp - 500000, timestamp),
         random.randint(timestamp - 500000, timestamp),
         random.randint(timestamp - 500000, timestamp)
     ]
     distance = random.randint(3100, 3300)
-    #distance = 100
     totalTime = random.randint(700, 750)
     startTime = timestamp - 700000
     endTime = timestamp
@@ -107,12 +108,12 @@ def end(start_text):
             "speed": speed,
         },
         "distance": distance,
-        "endTime": timestamp,
+        "endTime": endTime,
         "id": 1,
         "md5": md5,
         "phone": phone,
         "platform": 1,
-        "startTime": timestamp - 700000,
+        "startTime":  startTime,
         "stepRate": random.randint(90, 120),
         "totalTime": totalTime,
         "type": 1,
@@ -120,8 +121,10 @@ def end(start_text):
         "validDistance": distance,
         "version": "V 2.4.4",
     }
+    #print(json.dumps(data))
     r = requests.post(config_url['run_end'], headers=config_header_post, data=json.dumps(data))
     json_r = json.loads(r.text)
+    #print(r.text)
     if json_r['data']['valid'] == 1:
         print('跑步完成！')
         wxpusher.send('您的跑步已经完成并成功提交')

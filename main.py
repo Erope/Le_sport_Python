@@ -13,6 +13,7 @@ def menu():
     print('6. 签到活动')
     print('7. 速跑(不建议使用)')
     print('8. 正常跑')
+    print('9. 补签昨日(非常危险)')
 
 
 if __name__ == '__main__':
@@ -57,4 +58,8 @@ if __name__ == '__main__':
             r_text = start()
             sleep(config_Rundelay)
             end(r_text)
+        elif choice == '9':
+            print('速跑开始')
+            r_text = start()
+            end(r_text, True)
     # 暂时不测试获取活动id，直接指定
